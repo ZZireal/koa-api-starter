@@ -1,11 +1,13 @@
 const Joi = require('@hapi/joi');
+const shortid = require('shortid');
 
 const validate = require('middlewares/validate');
 const writerService = require('resources/writer/writer.service');
-const ENUM = ["novel", "poem", "fantasy"];
+const globalError = require('../globalError');
+
+const ENUM = ['novel', 'poem', 'fantasy'];
 
 const schema = Joi.object({
-  _id: Joi.number().required(),
   firstName: Joi.string()
     .trim()
     .messages({
@@ -22,17 +24,14 @@ const schema = Joi.object({
     }),
   books: Joi.array().items(
     Joi.object({
-      _id: Joi.number().required(),
       title: Joi.string().required(),
       genre: Joi.string().valid(...ENUM),
-    })
-  )
+    }),
+  ),
 });
 
 async function validator(ctx, next) {
   const { firstName, lastName } = ctx.validatedData;
-  console.log(ctx.validatedData);
-  console.log(firstName, lastName);
 
   const isWriterExists = await writerService.exists({
     firstName,
@@ -40,11 +39,7 @@ async function validator(ctx, next) {
   });
 
   if (isWriterExists) {
-    ctx.body = {
-      errors: {
-        _global: ['This writer is already exists'],
-      },
-    };
+    ctx.body = globalError('This writer is already exists');
     ctx.throw(400);
   }
 
@@ -53,14 +48,16 @@ async function validator(ctx, next) {
 
 async function handler(ctx) {
   const data = ctx.validatedData;
-  console.log(data);
 
   await writerService.create({
-    _id: data._id,
+    _id: shortid.generate(),
     firstName: data.firstName,
     lastName: data.lastName,
     age: data.age,
-    books: data.books,
+    books: data.books.map((book) => ({
+      _id: shortid.generate(),
+      ...book,
+    })),
   });
 }
 

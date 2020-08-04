@@ -2,7 +2,7 @@ const Joi = require('@hapi/joi');
 
 const validate = require('middlewares/validate');
 const writerService = require('resources/writer/writer.service');
-const ENUM = ["novel", "poem", "fantasy"];
+const globalError = require('../globalError');
 
 const schema = Joi.object({
   firstName: Joi.string()
@@ -18,22 +18,16 @@ const schema = Joi.object({
   age: Joi.number()
     .messages({
       'string.empty': 'Age is required',
-    })
+    }),
 });
 
 async function validator(ctx, next) {
   const isWriterExists = await writerService.exists({
-    _id: +ctx.params.writerId
+    _id: ctx.params.writerId,
   });
 
-  console.log(isWriterExists);
-
   if (!isWriterExists) {
-    ctx.body = {
-      errors: {
-        _global: ['This writer is not exists'],
-      },
-    };
+    ctx.body = globalError('This writer is not exists');
     ctx.throw(400);
   }
 
@@ -42,16 +36,16 @@ async function validator(ctx, next) {
 
 async function handler(ctx) {
   const data = ctx.validatedData;
-  console.log(data.firstName);
 
-  await writerService.update({
-    _id: +ctx.params.writerId
-  }, (doc) => {
-    if (data.firstName) doc.firstName = data.firstName;
-    if (data.lastName) doc.lastName = data.lastName;
-    if (data.age) doc.age = data.age;
-    return doc;
-  });
+  await writerService.atomic.update(
+    { _id: ctx.params.writerId },
+    {
+      $set: {
+        ...data,
+      },
+    },
+  );
+  ctx.body = await writerService.find({ _id: ctx.params.writerId });
 }
 
 module.exports.register = (router) => {

@@ -2,8 +2,9 @@ const Joi = require('@hapi/joi');
 
 const validate = require('middlewares/validate');
 const writerService = require('resources/writer/writer.service');
-const sortByEnum = ["createdOn", "firstName", "lastName", "id"];
-const sortOrderEnum = ["asc", "desc"];
+
+const sortByEnum = ['createdOn', 'firstName', 'lastName', 'id'];
+const sortOrderEnum = ['asc', 'desc'];
 
 const schema = Joi.object({
   pageNumber: Joi.number().required(),
@@ -33,21 +34,19 @@ async function handler(ctx) {
     case 'desc':
       sortOrder = -1;
       break;
-  };
+    default:
+      break;
+  }
 
   if (sortBy === 'id') sortBy = '_id';
-
-  console.log(pageNumber, documentsInPage, sortBy, sortOrder);
 
   ctx.body = await writerService.find({}, {
     perPage: +documentsInPage,
     page: +pageNumber,
-    sort: { [sortBy]: sortOrder }
+    sort: { [sortBy]: sortOrder },
   });
 }
 
 module.exports.register = (router) => {
   router.get('/get', validate(schema), handler);
 };
-
-

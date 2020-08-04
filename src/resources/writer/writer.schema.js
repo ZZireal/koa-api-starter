@@ -11,8 +11,8 @@ const schema = Joi.object({
       _id: Joi.string().required(),
       title: Joi.string().required(),
       genre: Joi.string().required(),
-    }
-  ]
+    },
+  ],
 });
 
 module.exports = (obj) => schema.validate(obj, { allowUnknown: false });

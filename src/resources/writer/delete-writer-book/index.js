@@ -1,35 +1,21 @@
-const Joi = require('@hapi/joi');
-
-const validate = require('middlewares/validate');
 const writerService = require('resources/writer/writer.service');
+const globalError = require('../globalError');
 
 async function validator(ctx, next) {
-  console.log("sdfdsfsdf");
   const isWriterExists = await writerService.exists({
-    _id: +ctx.params.writerId
+    _id: ctx.params.writerId,
   });
   const isBookExists = await writerService.exists({
-    "books._id": +ctx.params.bookId
+    'books._id': ctx.params.bookId,
   });
 
-  console.log(isBookExists);
-  console.log(isWriterExists);
-
   if (!isWriterExists) {
-    ctx.body = {
-      errors: {
-        _global: ['This writer is not exists'],
-      },
-    };
+    ctx.body = globalError('This writer is not exists');
     ctx.throw(400);
   }
 
   if (!isBookExists) {
-    ctx.body = {
-      errors: {
-        _global: ['This book is not exists'],
-      },
-    };
+    ctx.body = globalError('This book is not exists');
     ctx.throw(400);
   }
 
@@ -37,14 +23,15 @@ async function validator(ctx, next) {
 }
 
 async function handler(ctx) {
-  const data = ctx.validatedData;
-  ctx.body = await writerService.update({ _id: +ctx.params.writerId }, (doc) => {
-    console.log(doc.books)
-    doc.books = doc.books.filter(book =>
-      !(book._id === +ctx.params.bookId)
-    );
-    return doc;
-  }
+  ctx.body = await writerService.atomic.update(
+    { _id: ctx.params.writerId },
+    {
+      $pull: {
+        books: {
+          _id: ctx.params.bookId,
+        },
+      },
+    },
   );
 }
 
