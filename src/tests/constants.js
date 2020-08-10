@@ -1,5 +1,6 @@
 module.exports = {
   ERRORS: {
+    WRITER_IS_ALREADY_EXISTS: { _global: ['This writer is already exists'] },
     EMAIL_IN_USE: { email: ['This email is already in use'] },
     USER_REGISTRED: { email: ['User with this email is already registered'] },
     INCORRECT_CREDENTIALS: { credentials: ['Incorrect email or password'] },
@@ -15,5 +16,8 @@ module.exports = {
     DEFAULT_SIGNUP_TOKEN: 'signup_token',
     DEFAULT_RESET_PASSWORD_TOKEN: 'reset_password_token',
     PRIVATE_FIELDS: ['passwordHash', 'signupToken', 'resetPasswordToken'],
+  },
+  WRITER: {
+    COLLECTION: 'writers',
   },
 };

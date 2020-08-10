@@ -46,6 +46,7 @@ async function handler(ctx) {
     },
   );
   ctx.body = await writerService.find({ _id: ctx.params.writerId });
+  ctx.status = 200;
 }
 
 module.exports.register = (router) => {

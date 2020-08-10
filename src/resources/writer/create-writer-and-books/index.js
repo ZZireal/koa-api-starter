@@ -49,7 +49,7 @@ async function validator(ctx, next) {
 async function handler(ctx) {
   const data = ctx.validatedData;
 
-  await writerService.create({
+  ctx.body = await writerService.create({
     _id: shortid.generate(),
     firstName: data.firstName,
     lastName: data.lastName,
