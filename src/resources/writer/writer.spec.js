@@ -42,7 +42,6 @@ describe('/writers', async () => {
 
   beforeEach(async () => {
     newWriter = await new WriterBuilder().build();
-
     dbWriters = await writerService.findOne();
   });
 
@@ -53,6 +52,7 @@ describe('/writers', async () => {
   it('should successfully return data of writer', (done) => {
     testsHelper.test(done, async () => {
       const dbWriters = await writerService.findOne();
+      expect(dbWriters).to.have.all.keys('_id' , 'createdOn', 'firstName', 'lastName', 'age', 'books');
     });
   });
 
@@ -95,8 +95,6 @@ describe('/writers', async () => {
     testsHelper.test(done, async () => {
       const dbWriters = await writerService.findOne();
       expect(dbWriters.books[0].genre).to.be.a('string');
-
-      console.log(dbWriters.books[0].genre, typeof(dbWriters.books[0].genre));
     });
   });  
 
@@ -109,8 +107,6 @@ describe('/writers', async () => {
 
   it('should successfully create writer', (done) => {
     testsHelper.test(done, async () => {
-      
-      
       const response = await ok.post('/writer')
         .send(VALID_WRITER)
         .expect(200);
@@ -119,7 +115,6 @@ describe('/writers', async () => {
 
   it('should return an error that writer is already exists', (done) => {
       testsHelper.test(done, async () => {
-        
         const response = await ok.post('/writer')
           .send({ ...dbWriters, firstName: 'uniqueName'})
           .expect(200);
@@ -128,9 +123,7 @@ describe('/writers', async () => {
 
   it('should return an error that writer is not exists', (done) => {
     testsHelper.test(done, async () => {
-      
       bWriters = await writerService.create(VALID_WRITER);
-
       const responseDelete = await ok.delete('/writer/1')
         .expect(200);
     });
@@ -138,9 +131,7 @@ describe('/writers', async () => {
 
   it('should successfully update writer', (done) => {
     testsHelper.test(done, async () => {
-      
       dbWriters = await writerService.create(VALID_WRITER);
-      
       const responseUpdate = await ok.put('/writer/update/1')
         .send({ firstName: 'uniqueName' })
         .expect(200);
